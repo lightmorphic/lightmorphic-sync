@@ -1,0 +1,41 @@
+name: Build and publish Docker images
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - context: sync-api
+            image: lightmorphic-sync-api
+          - context: webstore-proxy
+            image: lightmorphic-webstore-proxy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set lowercase repo owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ matrix.image }}:latest
+            ghcr.io/${{ env.OWNER_LC }}/${{ matrix.image }}:${{ github.sha }}

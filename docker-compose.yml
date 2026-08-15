@@ -1,0 +1,16 @@
+services:
+  sync-api:
+    image: ghcr.io/lightmorphic/lightmorphic-sync-api:latest
+    container_name: lightmorphic-sync-api
+    restart: unless-stopped
+    ports:
+      - "4081:3000"
+    volumes:
+      - ./data/sync-api:/data
+
+  webstore-proxy:
+    image: ghcr.io/lightmorphic/lightmorphic-webstore-proxy:latest
+    container_name: lightmorphic-webstore-proxy
+    restart: unless-stopped
+    ports:
+      - "4082:8080"
